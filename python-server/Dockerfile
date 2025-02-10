@@ -20,7 +20,7 @@ COPY SensorData_abi.json /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the required ports
-EXPOSE 5001 8545
+EXPOSE 5002 8545
 
 # Run the Python server script
 CMD ["python", "server.py"]

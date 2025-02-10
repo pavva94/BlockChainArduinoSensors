@@ -1,7 +1,8 @@
 import asyncio
 import time
 import json
-import ipfshttpclient
+import traceback
+import requests
 from web3 import Web3
 from bleak import BleakClient
 
@@ -15,8 +16,12 @@ PRESSURE_UUID = "2A6D"
 ganache_url = "http://ganache:8545"
 contract_address = ""
 
+# IPFS endpoint for adding files
+ipfs_url_add = 'http://ipfs:5001/api/v0/add'
+
 # Replace with the MAC address of your Arduino Nano 33 BLE Sense
 mac_address = ""
+
 # Blockchain Connection (Ganache)
 def connect_to_blockchain():
 
@@ -44,15 +49,30 @@ def connect_to_blockchain():
     return web3, contract, account
 
 
-# IPFS Connection
-def connect_to_ipfs():
-    ipfs_client = ipfshttpclient.connect('/ip4/127.0.0.1/tcp/5001/')
-    print("Connected to IPFS.")
-    return ipfs_client
+def upload_json_to_ipfs(json_data):
+    try:
+        # Convert the JSON data to bytes
+        json_bytes = json.dumps(json_data).encode('utf-8')
 
+        # Send the data to IPFS
+        response = requests.post(ipfs_url_add, files={'file': ('sensor_data.json', json_bytes)})
+
+        # Check if the upload was successful
+        if response.status_code == 200:
+            ipfs_hash = response.json()['Hash']  # Get the IPFS hash from the response
+            print(f"Successfully uploaded JSON to IPFS!")
+            print(f"IPFS Hash: {ipfs_hash}")
+            return ipfs_hash
+        else:
+            print(f"Failed to upload JSON to IPFS. Status Code: {response.status_code}")
+            print(response.text)
+            raise Exception("Failed to upload JSON to IPFS. Status text: {response.text}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error uploading JSON to IPFS: {e}")
 
 # Function to read sensor data
-async def read_sensor_data(address, ipfs_client, contract, account):
+async def read_sensor_data(address, contract, account):
     async with BleakClient(address) as client:
         print(f"Connected to {address}")
 
@@ -77,12 +97,10 @@ async def read_sensor_data(address, ipfs_client, contract, account):
             "timestamp": int(time.time())
         }
 
-        with open("sensor_data.json", "w") as f:
-            json.dump(payload, f)
-
         # Upload to IPFS
-        res = ipfs_client.add("sensor_data.json")
-        ipfs_hash = res["Hash"]
+        # res = ipfs_client.add("sensor_data.json")
+        ipfs_hash = upload_json_to_ipfs(payload)
+        # ipfs_hash = res["Hash"]
         print(f"Data stored in IPFS: {ipfs_hash}")
 
         # Store hash in blockchain
@@ -100,10 +118,13 @@ def main():
 
     # Connect to Blockchain and IPFS
     web3, contract, account = connect_to_blockchain()
-    ipfs_client = connect_to_ipfs()
 
-    asyncio.run(read_sensor_data(mac_address, ipfs_client, contract, account))
+    asyncio.run(read_sensor_data(mac_address, contract, account))
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print("Failed: ", e)
+        traceback.print_exc()

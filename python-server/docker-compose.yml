@@ -24,6 +24,8 @@ services:
       - "8080:8080"
     networks:
       - backend
+    environment:
+      - IPFS_API_URL=http://ipfs:5001  # Correct URL to access IPFS API internally
     restart: unless-stopped
 
 #  hardhat:
@@ -45,7 +47,7 @@ services:
       - ganache
       - ipfs
     ports:
-      - "5002:5001"
+      - "5002:5002"
     networks:
       - backend
     environment:
