@@ -51,6 +51,8 @@ Make sure you have the following installed on your system:
 
 ### 🚀 Setup & Run the Project
 
+### Without Docker
+
 #### **Step 1: Clone the Repository**
 ```sh
 git clone https://github.com/your-repo/home-monitoring-system.git
@@ -102,11 +104,80 @@ python server.py
 - Ensure the Arduino is powered on.
 - The Python server will receive data, store it in IPFS, and log the hash on the blockchain.
 
+
+---
+### With Docker
+
+Only with FastAPI endpoints.
+
+
+#### **Step 1: Compose Build**
+```sh
+docker-compose build --no-cache
+```
+
+#### **Step 2: Compose Up**
+```sh
+docker-compose up --build   
+```
+
+
+
+---
+
+
+
+## 📡 API Endpoints
+
+### 🔹 **Send Sensor Data**
+**POST** `/sensor/data`
+```json
+{
+  "temperature": 22.5,
+  "humidity": 45.3,
+  "pressure": 1013.2
+}
+```
+- Stores data on IPFS
+- Saves IPFS hash on blockchain
+
+### 🔹 **Retrieve Sensor Data**
+**GET** `/sensor/data/{ipfs_hash}`
+- Fetches stored sensor data from IPFS
+
+### 🔹 **Check Blockchain Transactions**
+**GET** `/blockchain/transactions`
+- Lists all recorded IPFS hashes on blockchain
+
+---
+
+## 🛠 Development & Debugging
+### 🔍 Check Running Containers
+```sh
+docker ps
+```
+### 📝 View FastAPI Logs
+```sh
+docker logs python-server -f
+```
+### 📡 Test API with cURL
+```sh
+curl -X POST "http://localhost:5001/sensor/data" -H "Content-Type: application/json" -d '{"temperature": 22.5, "humidity": 50, "pressure": 1012}'
+```
+
+---
+
+
+
 ## 📌 Future Improvements
 - Implement a web dashboard for real-time monitoring.
 - Add voice command integration for data queries.
 - Optimize data storage using additional compression techniques.
+- Implement **authentication** for API endpoints
+- Improve **error handling** for failed transactions
+- Add **WebSocket** support for real-time updates
 
 ## 🤝 Contributing
 Feel free to fork this repository, submit issues, or suggest improvements.
 
+curl -X 'POST' 'http://127.0.0.1:8000/store_sensor_data/' -H 'Content-Type: application/json' -d '{"temperature": 22.5,"humidity": 60.5,"pressure": 1012.3,"timestamp": 1618254789 }'

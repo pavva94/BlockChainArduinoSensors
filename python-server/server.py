@@ -72,7 +72,7 @@ def upload_json_to_ipfs(json_data):
         print(f"Error uploading JSON to IPFS: {e}")
 
 # Function to read sensor data
-async def read_sensor_data(address, contract, account):
+async def read_sensor_data(web3, address, contract, account):
     async with BleakClient(address) as client:
         print(f"Connected to {address}")
 
@@ -119,7 +119,7 @@ def main():
     # Connect to Blockchain and IPFS
     web3, contract, account = connect_to_blockchain()
 
-    asyncio.run(read_sensor_data(mac_address, contract, account))
+    asyncio.run(read_sensor_data(web3, mac_address, contract, account))
 
 
 if __name__ == "__main__":
