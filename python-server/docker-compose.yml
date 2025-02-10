@@ -40,7 +40,7 @@ services:
   python-server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.backend
     container_name: python-server
     depends_on:
       - ganache
