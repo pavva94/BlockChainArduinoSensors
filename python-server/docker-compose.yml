@@ -1,5 +1,7 @@
 version: '3.8'
 
+name: blockchain-arduino
+
 services:
   ganache:
     image: trufflesuite/ganache-cli
@@ -24,15 +26,15 @@ services:
       - backend
     restart: unless-stopped
 
-  hardhat:
-    image: node:18
-    container_name: hardhat
-    working_dir: /app
-    volumes:
-      - ./blockchain:/app
-    entrypoint: /bin/sh
-    networks:
-      - backend
+#  hardhat:
+#    image: node:18
+#    container_name: hardhat
+#    working_dir: /app
+#    volumes:
+#      - ./blockchain:/app
+#    entrypoint: /bin/sh
+#    networks:
+#      - backend
 
   python-server:
     build:
@@ -52,6 +54,7 @@ services:
 
 networks:
   backend:
+    name: backend  # Forces the name to "backend"
     driver: bridge
 
 volumes:
