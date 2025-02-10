@@ -132,6 +132,23 @@ async def store_sensor_data(sensor_data: SensorData):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/sensor/latest")
+def get_latest_sensor_data():
+    """Fetch the latest stored sensor data from the blockchain."""
+    try:
+        # Connect to Blockchain and IPFS
+        web3, contract, account = connect_to_blockchain()
+        print("Blockchain Connected..")
+
+        latest_data = contract.functions.getLatestData().call({"from": account})
+
+        ipfs_hash, timestamp = latest_data
+        return {"ipfs_hash": ipfs_hash, "timestamp": timestamp}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("http_server:app", host="0.0.0.0", port=8000, reload=True)
