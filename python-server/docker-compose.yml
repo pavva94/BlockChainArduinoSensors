@@ -28,15 +28,6 @@ services:
       - IPFS_API_URL=http://ipfs:5001
     restart: unless-stopped
 
-  hardhat:
-    build:
-      context: .
-      dockerfile: Dockerfile.hardhat
-    ports:
-      - "7545:7545"
-    networks:
-      - backend
-
   python-server:
     build:
       context: .
@@ -53,7 +44,6 @@ services:
     environment:
       - IPFS_API_URL=http://ipfs:5001
       - GANACHE_URL=http://ganache:8545
-      - HARDHAT_URL=http://hardhat:7545
     privileged: true  # Grant extra privileges to access hardware
     volumes:
       - "/dev/ttyS4:/dev/ttyS4"
