@@ -141,6 +141,7 @@ def get_latest_sensor_data():
         print("Blockchain Connected..")
 
         latest_data = contract.functions.getLatestData().call({"from": account})
+        print(f"Latest sensor data: {latest_data}")
 
         ipfs_hash, timestamp = latest_data
         return {"ipfs_hash": ipfs_hash, "timestamp": timestamp}

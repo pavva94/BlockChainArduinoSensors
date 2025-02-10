@@ -1,3 +1,5 @@
+version: '3.8'
+
 name: blockchain-arduino
 
 services:
@@ -23,18 +25,17 @@ services:
     networks:
       - backend
     environment:
-      - IPFS_API_URL=http://ipfs:5001  # Correct URL to access IPFS API internally
+      - IPFS_API_URL=http://ipfs:5001
     restart: unless-stopped
 
-#  hardhat:
-#    image: node:18
-#    container_name: hardhat
-#    working_dir: /app
-#    volumes:
-#      - ./blockchain:/app
-#    entrypoint: /bin/sh
-#    networks:
-#      - backend
+  hardhat:
+    build:
+      context: .
+      dockerfile: Dockerfile.hardhat
+    ports:
+      - "7545:7545"
+    networks:
+      - backend
 
   python-server:
     build:
@@ -52,6 +53,13 @@ services:
     environment:
       - IPFS_API_URL=http://ipfs:5001
       - GANACHE_URL=http://ganache:8545
+      - HARDHAT_URL=http://hardhat:7545
+    privileged: true  # Grant extra privileges to access hardware
+    volumes:
+      - "/dev/ttyS4:/dev/ttyS4"
+    devices:
+      - "/dev/ttyS4:/dev/ttyS4"  # Bluetooth device path
+
 
 networks:
   backend:
