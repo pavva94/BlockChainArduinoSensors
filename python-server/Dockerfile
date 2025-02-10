@@ -7,20 +7,27 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libbluetooth-dev \
-    build-essential
+    build-essential \
+    bluez \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the current directory contents into the container
 COPY requirements.txt /app
+COPY http_server.py /app
 COPY server.py /app
 COPY testWeb3.py /app
 COPY testIPFS.py /app
+COPY testBLE.py /app
 COPY SensorData_abi.json /app
 
 # Install the required Python libraries
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the required ports
-EXPOSE 5002 8545
+EXPOSE 5002 8000 8545
 
 # Run the Python server script
-CMD ["python", "server.py"]
+# for Arduino BLE connection
+# CMD ["python", "server.py"]
+# for FastAPI connection
+CMD ["python", "http_server.py"]
