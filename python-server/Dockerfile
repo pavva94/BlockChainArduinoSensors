@@ -14,8 +14,10 @@ RUN apt-get update && apt-get install -y \
 # Copy the current directory contents into the container
 COPY requirements.txt /app
 COPY http_server.py /app
+COPY server.py /app
 COPY testWeb3.py /app
 COPY testIPFS.py /app
+COPY testBLE.py /app
 COPY SensorData_abi.json /app
 
 # Install the required Python libraries
