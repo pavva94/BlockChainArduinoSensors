@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  ganache:
+    image: trufflesuite/ganache-cli
+    container_name: ganache
+    ports:
+      - "8545:8545"
+    networks:
+      - backend
+    volumes:
+      - ./ganache-data:/root/.ganache
+
+  ipfs:
+    image: ipfs/go-ipfs
+    container_name: ipfs
+    volumes:
+      - ./ipfs-data:/data/ipfs
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+      - "8080:8080"
+    networks:
+      - backend
+    restart: unless-stopped
+
+  hardhat:
+    image: node:18
+    container_name: hardhat
+    working_dir: /app
+    volumes:
+      - ./blockchain:/app
+    entrypoint: /bin/sh
+    networks:
+      - backend
+
+  python-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: python-server
+    depends_on:
+      - ganache
+      - ipfs
+    ports:
+      - "5002:5001"
+    networks:
+      - backend
+    environment:
+      - IPFS_API_URL=http://ipfs:5001
+      - GANACHE_URL=http://ganache:8545
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  ipfs-data:
+  ganache-data:

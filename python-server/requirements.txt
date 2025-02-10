@@ -1,0 +1,4 @@
+paho-mqtt
+ipfshttpclient
+web3
+bleak
