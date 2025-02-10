@@ -1,32 +1,58 @@
 import asyncio
-from bleak import BleakClient
 import time
+import json
 import ipfshttpclient
 from web3 import Web3
-import json
+from bleak import BleakClient
 
-# Blockchain Connection (Ganache)
-ganache_url = "http://127.0.0.1:8545"
-web3 = Web3(Web3.HTTPProvider(ganache_url))
-
-with open("SensorData_abi.json") as f:
-    contract_data = json.load(f)
-    abi = contract_data['abi']  # Extract ABI
-
-contract_address = "0x2A942bA77d19Caeb827163aB706394c21167f9Eb"  # Replace with your contract address
-contract = web3.eth.contract(address=contract_address, abi=abi)
-account = web3.eth.accounts[0]  # Replace with the appropriate account
-
-# IPFS Connection
-ipfs_client = ipfshttpclient.connect('/ip4/127.0.0.1/tcp/5001/http')
 
 # BLE Characteristics UUIDs (matching Arduino)
 TEMPERATURE_UUID = "2A1C"
 HUMIDITY_UUID = "2A6F"
 PRESSURE_UUID = "2A6D"
 
+# Ganache URL and Contract
+ganache_url = "http://ganache:8545"
+contract_address = ""
 
-async def read_sensor_data(address):
+# Replace with the MAC address of your Arduino Nano 33 BLE Sense
+mac_address = ""
+# Blockchain Connection (Ganache)
+def connect_to_blockchain():
+
+    web3 = Web3(Web3.HTTPProvider(ganache_url))
+
+    if not web3.is_connected():
+        raise Exception("Failed to connect to Ganache.")
+
+    print("Connected to Blockchain.")
+
+    with open("SensorData_abi.json") as f:
+        contract_data = json.load(f)
+        abi = contract_data['abi']  # Extract ABI
+
+
+    contract = web3.eth.contract(address=contract_address, abi=abi)
+
+    accounts = web3.eth.accounts  # List of accounts
+    if len(accounts) == 0:
+        raise Exception("No accounts found. Make sure Ganache is running.")
+
+    account = accounts[0]  # Use the first available account
+    print("Using Account:", account)
+
+    return web3, contract, account
+
+
+# IPFS Connection
+def connect_to_ipfs():
+    ipfs_client = ipfshttpclient.connect('/ip4/127.0.0.1/tcp/5001/')
+    print("Connected to IPFS.")
+    return ipfs_client
+
+
+# Function to read sensor data
+async def read_sensor_data(address, ipfs_client, contract, account):
     async with BleakClient(address) as client:
         print(f"Connected to {address}")
 
@@ -65,10 +91,18 @@ async def read_sensor_data(address):
         print(f"Stored IPFS hash in blockchain: {ipfs_hash}")
 
 
+# Main function to tie everything together
 def main():
-    # Replace with the MAC address of your Arduino Nano 33 BLE Sense
-    address = "0ED28FBB-7208-3275-734C-12D7A24115DB"
-    asyncio.run(read_sensor_data(address))
+    # Waiting the other services to start
+    print("Waiting to connect..")
+    X = 25
+    time.sleep(X)
+
+    # Connect to Blockchain and IPFS
+    web3, contract, account = connect_to_blockchain()
+    ipfs_client = connect_to_ipfs()
+
+    asyncio.run(read_sensor_data(mac_address, ipfs_client, contract, account))
 
 
 if __name__ == "__main__":
